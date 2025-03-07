@@ -11,7 +11,7 @@ import SwiftUI
 struct Camii_BulmaApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreen()
         }
     }
 }
