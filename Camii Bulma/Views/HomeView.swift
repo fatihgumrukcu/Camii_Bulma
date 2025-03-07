@@ -43,7 +43,7 @@ struct HomeView: View {
                             }
                         }
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-                        .frame(height: 250)
+                        .frame(height: 300)
                     }
                     .padding(.horizontal)
                     

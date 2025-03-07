@@ -1,14 +1,140 @@
 import SwiftUI
 
-struct ZikirmatikView: View {
-    @State private var count = 0
-    @State private var target = 33
-    @State private var showTargetPicker = false
-    @State private var showDhikrPicker = false
-    @State private var lastVibrationTime = Date()
-    @State private var showResetAlert = false
-    @State private var selectedDhikr = DhikrType.commonDhikrs[0]
+struct ControlButton: View {
+    let imageName: String
+    let title: String
+    let action: () -> Void
     
+    var body: some View {
+        Button(action: action) {
+            VStack {
+                Image(systemName: imageName)
+                    .font(.system(size: 24))
+                Text(title)
+                    .font(.system(size: 12))
+            }
+            .foregroundColor(.white)
+        }
+    }
+}
+
+struct RecordListView: View {
+    @ObservedObject var viewModel: ZikirViewModel
+    @Binding var showingRecords: Bool
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                AppTheme.gradientBackground
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    // İstatistikler
+                    VStack(spacing: 15) {
+                        HStack {
+                            Text("Toplam Zikir")
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text("\(viewModel.statistics.totalCount)")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                        HStack {
+                            Text("Bugün")
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text("\(viewModel.statistics.dailyCount)")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                        HStack {
+                            Text("Bu Hafta")
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text("\(viewModel.statistics.weeklyCount)")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                        HStack {
+                            Text("Bu Ay")
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text("\(viewModel.statistics.monthlyCount)")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.1))
+                    .cornerRadius(15)
+                    .padding(.horizontal)
+                    
+                    // Kayıtlar
+                    List {
+                        ForEach(viewModel.records.reversed()) { record in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text(record.name)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Text(record.date.formatted(date: .abbreviated, time: .shortened))
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.7))
+                                }
+                                
+                                Text(record.arabic)
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                
+                                HStack {
+                                    Text("\(record.count)/\(record.target)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white)
+                                    
+                                    if record.count >= record.target {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 5)
+                            .listRowBackground(Color.white.opacity(0.1))
+                        }
+                        .onDelete { indexSet in
+                            let reversedRecords = Array(viewModel.records.reversed())
+                            for index in indexSet {
+                                let record = reversedRecords[index]
+                                if let originalIndex = viewModel.records.firstIndex(where: { $0.id == record.id }) {
+                                    viewModel.records.remove(at: originalIndex)
+                                }
+                            }
+                            viewModel.saveRecords()
+                        }
+                    }
+                    .listStyle(InsetGroupedListStyle())
+                    .scrollContentBackground(.hidden)
+                }
+            }
+            .navigationTitle("Zikir Kayıtları")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: Button("Kapat") {
+                showingRecords = false
+            })
+            .preferredColorScheme(.dark)
+        }
+    }
+}
+
+struct ZikirmatikView: View {
+    @StateObject private var viewModel = ZikirViewModel()
+    @State private var showDhikrPicker = false
+    @State private var showTargetPicker = false
+    @State private var showSaveAlert = false
+    @State private var showingRecords = false
+    @State private var selectedDhikr = DhikrType.commonDhikrs[0]
+    @State private var target: Int = 33
+    @State private var lastVibrationTime = Date()
     private let vibrationInterval: TimeInterval = 0.1
     
     var body: some View {
@@ -16,109 +142,120 @@ struct ZikirmatikView: View {
             AppTheme.gradientBackground
                 .ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 30) {
-                    // Seçili Zikir Bilgisi
-                    VStack(spacing: 15) {
-                        Text(selectedDhikr.arabic)
-                            .font(.system(size: 36, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        Text(selectedDhikr.turkish)
-                            .font(.system(size: 24))
-                            .foregroundColor(.white.opacity(0.9))
-                        
-                        Text(selectedDhikr.meaning)
-                            .font(.system(size: 16))
-                            .foregroundColor(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        Text("Okunuşu: \(selectedDhikr.pronunciation)")
-                            .font(.system(size: 16))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    .padding(.top, 30)
-                    
-                    // Sayaç
-                    VStack(spacing: 10) {
-                        Text("\(count)")
-                            .font(.system(size: 72, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        Text("/ \(target)")
-                            .font(.system(size: 24))
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    
-                    // Zikir Düğmesi
+            VStack {
+                HStack {
+                    Spacer()
                     Button(action: {
-                        incrementCount()
+                        showingRecords = true
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white.opacity(0.15))
-                                .frame(width: 200, height: 200)
-                                .shadow(color: .white.opacity(0.1), radius: 10)
-                            
-                            Circle()
-                                .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                                .frame(width: 200, height: 200)
-                            
-                            Image(systemName: "rosette")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 60, height: 60)
-                                .foregroundColor(.white)
-                        }
+                        Image(systemName: "list.bullet")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                }
+                
+                Spacer()
+                
+                // Seçili Zikir
+                VStack(spacing: 15) {
+                    Text(selectedDhikr.arabic)
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text(selectedDhikr.turkish)
+                        .font(.system(size: 24))
+                        .foregroundColor(.white.opacity(0.9))
+                    
+                    Text(selectedDhikr.meaning)
+                        .font(.system(size: 16))
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    Text("Okunuşu: \(selectedDhikr.pronunciation)")
+                        .font(.system(size: 16))
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                .padding(.top, 30)
+                
+                // Sayaç
+                VStack(spacing: 10) {
+                    Text("\(viewModel.count)")
+                        .font(.system(size: 72, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text("/ \(target)")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .padding(.vertical, 50)
+                
+                // Zikir Düğmesi
+                Button(action: {
+                    viewModel.increment()
+                    
+                    // Titreşim ver
+                    let now = Date()
+                    if now.timeIntervalSince(lastVibrationTime) >= vibrationInterval {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        lastVibrationTime = now
                     }
                     
-                    // Kontrol Düğmeleri
-                    HStack(spacing: 50) {
-                        // Zikir Seçimi
-                        Button(action: {
-                            showDhikrPicker = true
-                        }) {
-                            VStack {
-                                Image(systemName: "text.book.closed")
-                                    .font(.system(size: 24))
-                                Text("Zikir")
-                                    .font(.system(size: 12))
-                            }
-                            .foregroundColor(.white)
-                        }
-                        
-                        // Hedef Sayı
-                        Button(action: {
-                            showTargetPicker = true
-                        }) {
-                            VStack {
-                                Image(systemName: "target")
-                                    .font(.system(size: 24))
-                                Text("Hedef")
-                                    .font(.system(size: 12))
-                            }
-                            .foregroundColor(.white)
-                        }
-                        
-                        // Sıfırla
-                        Button(action: {
-                            showResetAlert = true
-                        }) {
-                            VStack {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 24))
-                                Text("Sıfırla")
-                                    .font(.system(size: 12))
-                            }
-                            .foregroundColor(.white)
-                        }
+                    // Hedefe ulaşıldığında bildirim
+                    if viewModel.count == target {
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
                     }
-                    .padding(.bottom, 30)
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.15))
+                            .frame(width: 200, height: 200)
+                            .shadow(color: .white.opacity(0.1), radius: 10)
+                        
+                        Circle()
+                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                            .frame(width: 200, height: 200)
+                        
+                        Image(systemName: "hand.tap")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.white)
+                    }
                 }
+                .padding(.bottom, 50)
+                
+                // Kontrol Düğmeleri
+                HStack(spacing: 50) {
+                    ControlButton(imageName: "text.book.closed", title: "Zikir") {
+                        showDhikrPicker = true
+                    }
+                    
+                    ControlButton(imageName: "target", title: "Hedef") {
+                        showTargetPicker = true
+                    }
+                    
+                    ControlButton(imageName: "arrow.counterclockwise", title: "Sıfırla") {
+                        viewModel.reset()
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                    }
+                    
+                    ControlButton(imageName: "square.and.arrow.down", title: "Kaydet") {
+                        viewModel.startRecording(
+                            name: selectedDhikr.turkish,
+                            arabic: selectedDhikr.arabic,
+                            target: target
+                        )
+                        showSaveAlert = true
+                    }
+                }
+                .padding(.bottom, 30)
+                
+                Spacer()
             }
         }
-        .navigationTitle("Zikirmatik")
         .sheet(isPresented: $showDhikrPicker) {
             NavigationView {
                 ZStack {
@@ -126,67 +263,67 @@ struct ZikirmatikView: View {
                         .ignoresSafeArea()
                     
                     ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(DhikrType.commonDhikrs) { dhikr in
-                                Button(action: {
-                                    selectedDhikr = dhikr
-                                    target = dhikr.recommendedCount
-                                    count = 0
-                                    showDhikrPicker = false
-                                }) {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        HStack {
-                                            Text(dhikr.turkish)
-                                                .font(.title3)
-                                                .bold()
-                                                .foregroundColor(.white)
-                                            Spacer()
-                                            if selectedDhikr.id == dhikr.id {
-                                                Image(systemName: "checkmark.circle.fill")
+                        VStack {
+                            Text("Zikir Seçimi")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .padding(.vertical)
+                            
+                            LazyVStack(spacing: 16) {
+                                ForEach(DhikrType.commonDhikrs) { dhikr in
+                                    Button(action: {
+                                        selectedDhikr = dhikr
+                                        target = dhikr.recommendedCount
+                                        showDhikrPicker = false
+                                    }) {
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            HStack {
+                                                Text(dhikr.turkish)
+                                                    .font(.title3)
+                                                    .bold()
                                                     .foregroundColor(.white)
+                                                Spacer()
+                                                if selectedDhikr.id == dhikr.id {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .foregroundColor(.white)
+                                                }
+                                            }
+                                            
+                                            Text(dhikr.arabic)
+                                                .font(.title2)
+                                                .foregroundColor(.white.opacity(0.9))
+                                            
+                                            Text(dhikr.meaning)
+                                                .font(.subheadline)
+                                                .foregroundColor(.white.opacity(0.8))
+                                            
+                                            HStack {
+                                                Text("Okunuşu: \(dhikr.pronunciation)")
+                                                    .font(.caption)
+                                                    .foregroundColor(.white.opacity(0.7))
+                                                Spacer()
+                                                Text("Önerilen: \(dhikr.recommendedCount)")
+                                                    .font(.caption)
+                                                    .foregroundColor(.white.opacity(0.7))
                                             }
                                         }
-                                        
-                                        Text(dhikr.arabic)
-                                            .font(.title2)
-                                            .foregroundColor(.white.opacity(0.9))
-                                        
-                                        Text(dhikr.meaning)
-                                            .font(.subheadline)
-                                            .foregroundColor(.white.opacity(0.8))
-                                        
-                                        HStack {
-                                            Text("Okunuşu: \(dhikr.pronunciation)")
-                                                .font(.caption)
-                                                .foregroundColor(.white.opacity(0.7))
-                                            Spacer()
-                                            Text("Önerilen: \(dhikr.recommendedCount)")
-                                                .font(.caption)
-                                                .foregroundColor(.white.opacity(0.7))
-                                        }
+                                        .padding()
+                                        .background(Color.white.opacity(0.1))
+                                        .cornerRadius(15)
                                     }
-                                    .padding()
-                                    .background(Color.white.opacity(0.1))
-                                    .cornerRadius(15)
                                 }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
+                            .padding(.vertical)
                         }
-                        .padding(.vertical)
-                    }
-                }
-                .navigationTitle("Zikir Seçimi")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Kapat") {
+                        .navigationBarTitleDisplayMode(.inline)
+                        .navigationBarItems(trailing: Button("Kapat") {
                             showDhikrPicker = false
-                        }
-                        .foregroundColor(.white)
+                        })
                     }
                 }
+                .preferredColorScheme(.dark)
             }
-            .preferredColorScheme(.dark)
         }
         .sheet(isPresented: $showTargetPicker) {
             NavigationView {
@@ -233,40 +370,22 @@ struct ZikirmatikView: View {
                 }
                 .navigationTitle("Hedef Sayı")
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Kapat") {
-                            showTargetPicker = false
-                        }
-                        .foregroundColor(.white)
-                    }
-                }
+                .navigationBarItems(trailing: Button("Kapat") {
+                    showTargetPicker = false
+                })
             }
             .preferredColorScheme(.dark)
         }
-        .alert("Sıfırla", isPresented: $showResetAlert) {
-            Button("İptal", role: .cancel) { }
-            Button("Sıfırla", role: .destructive) {
-                count = 0
-            }
-        } message: {
-            Text("Zikir sayacını sıfırlamak istediğinize emin misiniz?")
+        .sheet(isPresented: $showingRecords) {
+            RecordListView(viewModel: viewModel, showingRecords: $showingRecords)
         }
-    }
-    
-    private func incrementCount() {
-        count += 1
-        
-        // Titreşim ver
-        let now = Date()
-        if now.timeIntervalSince(lastVibrationTime) >= vibrationInterval {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            lastVibrationTime = now
+        .alert(isPresented: $showSaveAlert) {
+            Alert(
+                title: Text("Kaydedildi"),
+                message: Text("\(selectedDhikr.turkish) - \(viewModel.count) adet"),
+                dismissButton: .default(Text("Tamam"))
+            )
         }
-        
-        // Hedefe ulaşıldığında bildirim
-        if count == target {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-        }
+        .preferredColorScheme(.dark)
     }
 }

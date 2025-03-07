@@ -1,6 +1,6 @@
 import Foundation
 
-struct DhikrType: Identifiable {
+struct DhikrType: Identifiable, Hashable {
     let id = UUID()
     let arabic: String
     let turkish: String
