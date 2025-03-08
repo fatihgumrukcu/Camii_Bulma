@@ -4,24 +4,18 @@ import CoreLocation
 
 struct MapView: View {
     @ObservedObject var viewModel: MosqueViewModel
-    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var region = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 41.0082, longitude: 28.9784),
+        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+    )
     @State private var selectedMosque: Mosque?
     
     var body: some View {
         ZStack {
-            Map(position: $position) {
-                UserAnnotation()
-                
-                ForEach(viewModel.mosques) { mosque in
-                    Annotation(mosque.name, coordinate: mosque.coordinate) {
-                        MosqueAnnotationView(mosque: mosque)
-                    }
+            Map(coordinateRegion: $region, showsUserLocation: true, annotationItems: viewModel.mosques) { mosque in
+                MapAnnotation(coordinate: mosque.coordinate) {
+                    MosqueAnnotationView(mosque: mosque)
                 }
-            }
-            .mapControls {
-                MapUserLocationButton()
-                MapCompass()
-                MapScaleView()
             }
             .ignoresSafeArea()
             .edgesIgnoringSafeArea(.all)
@@ -39,10 +33,10 @@ struct MapView: View {
                         // Kullanıcının konumuna zoom yap
                         if let userLocation = viewModel.userLocation {
                             withAnimation {
-                                position = .region(MKCoordinateRegion(
+                                region = MKCoordinateRegion(
                                     center: userLocation.coordinate,
                                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-                                ))
+                                )
                             }
                         }
                     }) {
@@ -74,6 +68,14 @@ struct MapView: View {
                 tabBarAppearance.backgroundColor = UIColor(red: 245/255, green: 250/255, blue: 250/255, alpha: 1.0)
                 UITabBar.appearance().standardAppearance = tabBarAppearance
                 UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            }
+            
+            // Kullanıcının konumuna göre haritayı güncelle
+            if let userLocation = viewModel.userLocation {
+                region = MKCoordinateRegion(
+                    center: userLocation.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                )
             }
         }
     }

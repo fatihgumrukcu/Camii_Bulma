@@ -1,6 +1,10 @@
 import SwiftUI
 import CoreLocation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 struct QiblaView: View {
     @StateObject private var viewModel = QiblaViewModel()
     @State private var glowScale: CGFloat = 1.0
@@ -8,7 +12,7 @@ struct QiblaView: View {
     @State private var lastVibrationTime = Date()
     private let vibrationInterval: TimeInterval = 1.0 // 1 saniye aralıkla titreşim
     @Environment(\.scenePhase) private var scenePhase
-    
+
     private var compassCircle: some View {
         ZStack {
             // Dış daire
@@ -91,8 +95,8 @@ struct QiblaView: View {
         .onDisappear {
             viewModel.stopUpdatingHeading()
         }
-        .onChange(of: scenePhase) { _, newValue in
-            switch newValue {
+        .onChange(of: scenePhase) { phase in
+            switch phase {
             case .active:
                 viewModel.startUpdatingHeading()
                 withAnimation(.easeInOut(duration: 1).repeatForever()) {
@@ -104,8 +108,8 @@ struct QiblaView: View {
                 break
             }
         }
-        .onChange(of: viewModel.heading) { _, newValue in
-            checkQiblaAlignment(direction: newValue)
+        .onChange(of: viewModel.heading) { heading in
+            checkQiblaAlignment(direction: heading)
         }
     }
     
@@ -131,7 +135,11 @@ struct QiblaView: View {
             let now = Date()
             // Son titreşimden beri yeterli süre geçtiyse
             if now.timeIntervalSince(lastVibrationTime) >= vibrationInterval {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                #if os(iOS)
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.prepare()
+                generator.impactOccurred()
+                #endif
                 lastVibrationTime = now
             }
         }

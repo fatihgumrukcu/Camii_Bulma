@@ -8,15 +8,41 @@ class PrayerTimesViewModel: NSObject, ObservableObject, CLLocationManagerDelegat
     
     private let locationManager = CLLocationManager()
     private let geocoder = CLGeocoder()
-    private let apiKey = "0QhLhFVqt57HIhaQXnbMkg:4Bhtr27LLxG0BAIC8QNGSq"
+    private let apiKey = "0QhLhFqt57HIhaQXnbMkg:4Bhtr27LLxG0BAIC8QNGSq"
     private let baseURL = "https://api.collectapi.com/pray/all"
+    private let settingsViewModel = SettingsViewModel()
     
     override init() {
         super.init()
         setupLocationManager()
-        // Uygulama başlar başlamaz namaz vakitlerini yükle
         print("⏰ PrayerTimesViewModel: Başlatılıyor...")
         fetchPrayerTimes()
+    }
+    
+    // Test bildirimi gönderme fonksiyonu
+    func sendTestNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Test Bildirimi"
+        content.body = "Namaz vakti bildirimleri başarıyla ayarlandı"
+        content.sound = UNNotificationSound.default
+        content.badge = 1
+        
+        // 5 saniye sonra bildirim gönder
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        
+        let request = UNNotificationRequest(
+            identifier: "test_notification",
+            content: content,
+            trigger: trigger
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Test bildirimi gönderilirken hata: \(error)")
+            } else {
+                print("Test bildirimi başarıyla gönderildi")
+            }
+        }
     }
     
     private func setupLocationManager() {
@@ -24,6 +50,28 @@ class PrayerTimesViewModel: NSObject, ObservableObject, CLLocationManagerDelegat
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
+    }
+    
+    private func planlaNamezVaktiBildirimleri() {
+        guard settingsViewModel.prayerNotifications else { return }
+        
+        // Önce mevcut bildirimleri temizle
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        
+        for prayerTime in prayerTimes {
+            if let date = dateFormatter.date(from: prayerTime.time) {
+                let vakit = prayerTime.name.capitalized
+                NotificationService.shared.planlaNamezVaktibildirimi(
+                    vakit: vakit,
+                    tarih: date,
+                    title: "Namaz Vakti"
+                )
+                print("🔔 \(vakit) için bildirim planlandı: \(prayerTime.time)")
+            }
+        }
     }
     
     func fetchPrayerTimes() {
@@ -87,6 +135,7 @@ class PrayerTimesViewModel: NSObject, ObservableObject, CLLocationManagerDelegat
                         times.forEach { time in
                             print("   • \(time.name): \(time.time)")
                         }
+                        self?.planlaNamezVaktiBildirimleri() // Bildirimleri planla
                     } else {
                         self?.errorMessage = "API yanıtı başarısız"
                         print("❌ PrayerTimesViewModel: API yanıtı başarısız")

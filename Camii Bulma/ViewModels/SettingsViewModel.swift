@@ -1,25 +1,37 @@
 import SwiftUI
 
 class SettingsViewModel: ObservableObject {
-    @Published var prayerNotifications: Bool = true
-    @Published var adhanSound: Bool = true
+    @Published var prayerNotifications: Bool = true {
+        didSet {
+            saveSettings()
+            if prayerNotifications {
+                NotificationService.shared.requestAuthorization()
+            } else {
+                UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            }
+        }
+    }
     
     init() {
-        // Load saved settings
         loadSettings()
+        checkNotificationStatus()
     }
     
     private func loadSettings() {
-        // Load settings from UserDefaults
         let defaults = UserDefaults.standard
         prayerNotifications = defaults.bool(forKey: "prayerNotifications")
-        adhanSound = defaults.bool(forKey: "adhanSound")
     }
     
-    func saveSettings() {
-        // Save settings to UserDefaults
+    private func saveSettings() {
         let defaults = UserDefaults.standard
         defaults.set(prayerNotifications, forKey: "prayerNotifications")
-        defaults.set(adhanSound, forKey: "adhanSound")
+    }
+    
+    private func checkNotificationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                self.prayerNotifications = settings.authorizationStatus == .authorized
+            }
+        }
     }
 }

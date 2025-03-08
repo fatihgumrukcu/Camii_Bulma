@@ -11,12 +11,17 @@ struct SettingsView: View {
             
             List {
                 Section {
-                    Toggle("Namaz Vakti Bildirimleri", isOn: $viewModel.prayerNotifications)
-                        .foregroundColor(.white)
-                        .tint(.white)
-                    Toggle("Ezan Sesi", isOn: $viewModel.adhanSound)
-                        .foregroundColor(.white)
-                        .tint(.white)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle("Namaz Vakti Bildirimleri", isOn: $viewModel.prayerNotifications)
+                            .foregroundColor(.white)
+                            .tint(.white)
+                        
+                        if viewModel.prayerNotifications {
+                            Text("Her namaz vaktinde bildirim alacaksınız")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                    }
                 } header: {
                     Text("Bildirimler")
                         .foregroundColor(.white)
@@ -74,6 +79,6 @@ struct SettingsView: View {
             .listStyle(InsetGroupedListStyle())
             .ignoresSafeArea(edges: .bottom)
         }
-        .navigationTitle("Bildirimler")
+        .navigationTitle("Ayarlar")
     }
 }

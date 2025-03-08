@@ -3,6 +3,30 @@ import Foundation
 struct PrayerData {
     static let prayers: [Prayer] = [
         Prayer(
+            name: "Fatiha Suresi",
+            arabicText: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّح۪يمِ ﴿١﴾ اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَم۪ينَۙ ﴿٢﴾ اَلرَّحْمٰنِ الرَّح۪يمِۙ ﴿٣﴾ مَالِكِ يَوْمِ الدّ۪ينِۜ ﴿٤﴾ اِيَّاكَ نَعْبُدُ وَاِيَّاكَ نَسْتَع۪ينُۜ ﴿٥﴾ اِهْدِنَا الصِّرَاطَ الْمُسْتَق۪يمَۙ ﴿٦﴾ صِرَاطَ الَّذ۪ينَ اَنْعَمْتَ عَلَيْهِمْۙ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّٓالّ۪ينَ ﴿٧﴾",
+            turkishPronunciation: "Bismillahirrahmanirrahim. Elhamdü lillahi rabbil alemin. Errahmanir rahim. Maliki yevmiddin. İyyake na'büdü ve iyyake nestain. İhdinas sıratal müstakim. Sıratallezine en'amte aleyhim ğayril mağdubi aleyhim ve leddallin.",
+            meaning: "Rahman ve Rahim olan Allah'ın adıyla. Hamd, Alemlerin Rabbi olan Allah'a mahsustur. O, Rahman ve Rahim'dir. Din (hesap) gününün sahibidir. (Rabbimiz!) Ancak sana kulluk eder ve yalnız senden yardım dileriz. Bizi doğru yola ilet. Kendilerine nimet verdiklerinin yoluna; gazaba uğrayanların ve sapkınlarınkine değil."
+        ),
+        Prayer(
+            name: "Felak Suresi",
+            arabicText: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحيمِ قُلْ اَعُوذُ بِرَبِّ الْفَلَقِۙ ﴿١﴾ مِنْ شَرِّ مَا خَلَقَۙ ﴿٢﴾ وَمِنْ شَرِّ غَاسِقٍ اِذَا وَقَبَۙ ﴿٣﴾ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِۙ ﴿٤﴾ وَمِنْ شَرِّ حَاسِدٍ اِذَا حَسَدَ ﴿٥﴾",
+            turkishPronunciation: "Bismillahirrahmanirrahim. Kul eûzü bi-rabbil felak. Min şerri ma halak. Ve min şerri ğasikın iza vekab. Ve min şerrin neffasati fil ukad. Ve min şerri hasidin iza hased.",
+            meaning: "Rahman ve Rahim olan Allah'ın adıyla. De ki: Yarattığı şeylerin şerrinden, karanlığı çöktüğü zaman gecenin şerrinden, düğümlere üfleyenlerin şerrinden ve haset ettiği zaman hasetçinin şerrinden sabahın Rabbine sığınırım."
+        ),
+        Prayer(
+            name: "Nas Suresi",
+            arabicText: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحيمِ قُلْ اَعُوذُ بِرَبِّ النَّاسِۙ ﴿١﴾ مَلِكِ النَّاسِۙ ﴿٢﴾ اِلٰهِ النَّاسِۙ ﴿٣﴾ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِۙ ﴿٤﴾ اَلَّذي يُوَسْوِسُ في صُدُورِ النَّاسِۙ ﴿٥﴾ مِنَ الْجِن  ةِ وَالنَّاسِ ﴿٦﴾",
+            turkishPronunciation: "Bismillahirrahmanirrahim. Kul eûzü bi-rabbin nas. Melikin nas. İlahin nas. Min şerril vesvasil hannas. Ellezi yüvesvisü fi sudurin nas. Minel cinneti ven nas.",
+            meaning: "Rahman ve Rahim olan Allah'ın adıyla. De ki: İnsanların Rabbine, insanların Melikine (mutlak sahip ve hakimine), insanların İlahına sığınırım. O sinsi vesvesecinin şerrinden. O ki, insanların göğüslerine (kötü düşünceler) fısıldar. Gerek cinlerden, gerek insanlardan (olan bütün vesvesecilerin şerrinden Allah'a sığınırım)."
+        ),
+        Prayer(
+            name: "Fil Suresi",
+            arabicText: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحيمِ اَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِاَصْحَابِ الْفيلِۜ ﴿١﴾ اَلَمْ يَجْعَلْ كَيْدَهُمْ في تَضْليلٍۙ ﴿٢﴾ وَاَرْسَلَ عَلَيْهِمْ طَيْراً اَبابيلَۙ ﴿٣﴾ تَرْميهِمْ بِحِجَارَةٍ مِنْ سِجّيلٍۙ ﴿٤﴾ فَجَعَلَهُمْ كَعَصْفٍ مَأْكُولٍ ﴿٥﴾",
+            turkishPronunciation: "Bismillahirrahmanirrahim. Elem tera keyfe feale rabbüke bi ashabil fil. Elem yec'al keydehüm fi tadlil. Ve ersele aleyhim tayran ebabil. Termihim bi hicaretin min siccil. Fe cealehüm keasfin me'kul.",
+            meaning: "Rahman ve Rahim olan Allah'ın adıyla. Rabbin fil sahiplerine neler etti, görmedin mi? Onların tuzaklarını boşa çıkarmadı mı? Üzerlerine sürü sürü kuşlar gönderdi. O kuşlar, onlara pişkin tuğladan yapılmış taşlar atıyordu. Nihayet onları yenilmiş ekin yaprağı haline getirdi."
+        ),
+        Prayer(
             name: "Sübhaneke",
             arabicText: "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ وَتَبَارَكَ اسْمُكَ وَتَعَالَى جَدُّكَ وَلاَ إِلَهَ غَيْرُكَ",
             turkishPronunciation: "Sübhâneke allâhümme ve bi hamdik ve tebâra kesmük ve teâlâ ceddük ve lâ ilâhe ğayruk",
