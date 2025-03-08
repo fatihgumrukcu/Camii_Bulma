@@ -21,10 +21,6 @@ struct HomeView: View {
                         PrayerTimesCard(viewModel: prayerTimesViewModel)
                             .padding(.horizontal, 8)
                     }
-                    .onAppear {
-                        // View görünür olduğunda namaz vakitlerini güncelle
-                        prayerTimesViewModel.fetchPrayerTimes()
-                    }
                     
                     // Prayer Duas Section
                     VStack(spacing: 16) {
@@ -64,6 +60,11 @@ struct HomeView: View {
                     }
                     .padding(.horizontal)
                 }
+            }
+        }
+        .onAppear {
+            Task {
+                await prayerTimesViewModel.fetchPrayerTimes()
             }
         }
         .sheet(isPresented: $showingPrayerDetail) {

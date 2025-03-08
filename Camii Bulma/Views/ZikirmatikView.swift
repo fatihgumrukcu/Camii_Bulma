@@ -158,10 +158,11 @@ struct ZikirmatikView: View {
                 Spacer()
                 
                 // Seçili Zikir
-                VStack(spacing: 15) {
+                VStack(spacing: 20) {
                     Text(selectedDhikr.arabic)
-                        .font(.system(size: 36, weight: .bold))
+                        .font(.system(size: 48, weight: .bold))
                         .foregroundColor(.white)
+                        .padding(.top, -30)
                     
                     Text(selectedDhikr.turkish)
                         .font(.system(size: 24))
@@ -177,7 +178,7 @@ struct ZikirmatikView: View {
                         .font(.system(size: 16))
                         .foregroundColor(.white.opacity(0.7))
                 }
-                .padding(.top, 30)
+                .padding(.top, -20)
                 
                 // Sayaç
                 VStack(spacing: 10) {
@@ -189,7 +190,7 @@ struct ZikirmatikView: View {
                         .font(.system(size: 24))
                         .foregroundColor(.white.opacity(0.8))
                 }
-                .padding(.vertical, 50)
+                .padding(.vertical, 40)
                 
                 // Zikir Düğmesi
                 Button(action: {

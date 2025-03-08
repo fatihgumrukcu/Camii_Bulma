@@ -18,15 +18,19 @@ struct PrayerTimesCard: View {
         return formatter
     }
     
-    var greetingMessage: String {
-        let hour = Calendar.current.component(.hour, from: currentTime)
+    private func getGreeting(for date: Date) -> String {
+        let hour = Calendar.current.component(.hour, from: date)
         switch hour {
-        case 5..<12:
+        case 0..<6:
+            return "Hayırlı Geceler"
+        case 6..<11:
             return "Hayırlı Sabahlar"
-        case 12..<18:
+        case 11..<18:
             return "Hayırlı Günler"
-        default:
+        case 18..<22:
             return "Hayırlı Akşamlar"
+        default:
+            return "Hayırlı Geceler"
         }
     }
     
@@ -34,22 +38,25 @@ struct PrayerTimesCard: View {
         VStack(spacing: AppTheme.Spacing.large) {
             // Current Time Section
             VStack(spacing: 12) {
-                Text(greetingMessage)
-                    .font(.system(size: 32, weight: .bold))
+                Text(getGreeting(for: currentTime))
+                    .font(.system(size: 32, weight: .medium))
                     .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 2)
+                    .padding(.bottom, 8)
                 
                 Text(timeFormatter.string(from: currentTime))
                     .font(.system(size: 48, weight: .bold))
                     .foregroundColor(.white)
                 
-                Text(viewModel.currentLocation)
-                    .font(.system(size: 24))
-                    .foregroundColor(AppTheme.textColor.opacity(0.8))
+                HStack {
+                    Image(systemName: "location.circle.fill")
+                    Text(viewModel.currentLocation)
+                }
+                .font(.system(size: 24))
+                .foregroundColor(.white.opacity(0.8))
                 
                 Text(dateFormatter.string(from: currentTime).capitalized)
                     .font(.system(size: 20))
-                    .foregroundColor(AppTheme.textColor.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.7))
             }
             .padding(.vertical, AppTheme.Spacing.medium)
             
@@ -57,58 +64,55 @@ struct PrayerTimesCard: View {
                 Text(error)
                     .foregroundColor(.red)
                     .padding()
+            } else if viewModel.prayerTimes.isEmpty {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .scaleEffect(1.5)
+                    .padding()
             } else {
                 // Prayer Times Grid
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: AppTheme.Spacing.large) {
-                    ForEach(viewModel.prayerTimes) { prayerTime in
-                        VStack(spacing: 12) {
-                            Text(prayerTime.name)
-                                .font(.system(size: 20))
-                                .foregroundColor(AppTheme.textColor.opacity(0.8))
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AppTheme.Spacing.small), count: 3), spacing: AppTheme.Spacing.medium) {
+                    ForEach(viewModel.prayerTimes) { prayer in
+                        VStack(spacing: 8) {
+                            Text(prayer.name)
+                                .font(.system(size: 18))
+                                .foregroundColor(.white.opacity(0.8))
+                                .multilineTextAlignment(.center)
                             
-                            Text(prayerTime.time)
-                                .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(AppTheme.textColor)
+                            Text(prayer.time)
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, AppTheme.Spacing.medium)
-                        .padding(.horizontal, AppTheme.Spacing.small)
-                        .background(AppTheme.backgroundColor)
-                        .cornerRadius(12)
+                        .padding(.vertical, AppTheme.Spacing.small)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(isNextPrayer(name: prayer.name) ? Color.white.opacity(0.2) : Color.clear)
+                        )
                     }
                 }
             }
         }
         .padding(AppTheme.Spacing.large)
+        .frame(width: UIScreen.main.bounds.width - 2 * AppTheme.Spacing.large)
         .background(AppTheme.cardBackground)
-        .cornerRadius(20)
-        .shadow(color: AppTheme.cardShadow, radius: 8, x: 0, y: 2)
+        .cornerRadius(16)
         .onReceive(timer) { input in
             currentTime = input
-            // Her dakika başında namaz vakitlerini güncelle
-            if Calendar.current.component(.second, from: input) == 0 {
-                viewModel.fetchPrayerTimes()
-            }
         }
     }
-}
-
-struct PrayerTimeItem: View {
-    let name: String
-    let time: String
     
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(name)
-                .font(AppTheme.Typography.caption)
-                .foregroundColor(.gray)
-            
-            Text(time)
-                .font(AppTheme.Typography.body)
-                .foregroundColor(AppTheme.textColor)
+    private func isNextPrayer(name: String) -> Bool {
+        let now = Date()
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let currentTimeString = timeFormatter.string(from: now)
+        
+        if let nextPrayer = viewModel.prayerTimes
+            .first(where: { timeFormatter.date(from: $0.time)! > timeFormatter.date(from: currentTimeString)! }) {
+            return nextPrayer.name.lowercased() == name.lowercased()
         }
+        
+        return viewModel.prayerTimes.first?.name.lowercased() == name.lowercased()
     }
 }

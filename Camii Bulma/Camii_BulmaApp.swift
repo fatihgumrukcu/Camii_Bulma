@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UserNotifications
+import GoogleMobileAds
 
 @main
 struct Camii_BulmaApp: App {
@@ -14,7 +15,7 @@ struct Camii_BulmaApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreen()
         }
     }
 }
@@ -23,6 +24,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         // Bildirim izinlerini iste
         NotificationService.shared.requestAuthorization()
+        
+        // Google Mobile Ads'i başlat
+        MobileAds.initialize()
+        print("Google Mobile Ads başlatıldı")
+        
         return true
     }
     

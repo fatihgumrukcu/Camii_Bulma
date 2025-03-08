@@ -32,21 +32,21 @@ struct SettingsView: View {
                 
                 Section {
                     Button(action: {
-                        openURL(URL(string: "mailto:support@example.com")!)
+                        openURL(URL(string: "mailto:fatih.gumrukcu@icloud.com")!)
                     }) {
                         Label("İletişime Geç", systemImage: "envelope.fill")
                             .foregroundColor(.white)
                     }
                     
                     Button(action: {
-                        openURL(URL(string: "https://example.com/privacy")!)
+                        openURL(URL(string: "https://camiibulma.netlify.app/privacy-policy")!)
                     }) {
                         Label("Gizlilik Politikası", systemImage: "hand.raised.fill")
                             .foregroundColor(.white)
                     }
                     
                     Button(action: {
-                        openURL(URL(string: "https://example.com/terms")!)
+                        openURL(URL(string: "https://camiibulma.netlify.app/terms-of-service")!)
                     }) {
                         Label("Kullanım Koşulları", systemImage: "doc.text.fill")
                             .foregroundColor(.white)

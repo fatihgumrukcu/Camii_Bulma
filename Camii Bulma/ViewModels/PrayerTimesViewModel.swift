@@ -8,7 +8,7 @@ class PrayerTimesViewModel: NSObject, ObservableObject, CLLocationManagerDelegat
     
     private let locationManager = CLLocationManager()
     private let geocoder = CLGeocoder()
-    private let apiKey = "0QhLhFqt57HIhaQXnbMkg:4Bhtr27LLxG0BAIC8QNGSq"
+    private let apiKey = "0QhLhFVqt57HIhaQXnbMkg:4Bhtr27LLxG0BAIC8QNGSq"
     private let baseURL = "https://api.collectapi.com/pray/all"
     private let settingsViewModel = SettingsViewModel()
     

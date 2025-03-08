@@ -2,19 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GADIsAdManagerApp</key>
+	<true/>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3607553271294307~2271263513</string>
+	<key>GADTestDeviceIdentifiers</key>
+	<array>
+		<string>AAE308EA-F71C-4BF4-86A3-39A1F6797B10</string>
+	</array>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Bu uygulama, size önemli bildirimler gönderebilmek için izin istiyor</string>
 	<key>SKAdNetworkItems</key>
 	<array>
-		<string>cstr6suwn9.skadnetwork</string>
-		<string>4fzdc2evr5.skadnetwork</string>
-		<string>v9wttpbfk9.skadnetwork</string>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string></string>
 		<string>remote-notification</string>
 		<string>external-accessory</string>
 	</array>
